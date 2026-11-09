@@ -24,16 +24,26 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
     y_start = 0 
     x_start = 0 
     
-    # End point
+    # End point 
+    #Check if the next square of end point horizonally (d_x) and vertically (d_y) is within border
+    #Ex. Endpoint (5,5), length = 3, direction is d_y = 1, d_x = -1 (top right to bottom left)
+    #Next square for x = 5 + (-1) = 4 #x-direction decreases 
+    #Next square for y = 5 + 1 = 6 #y-direction increases 
     if (0 <= x_end + d_x < len(board[0]) and 0 <= y_end + d_y < len(board)):
         if board[y_end + d_y][x_end + d_x] == " ":
             open_end = True
         
     #Start point 
+    #Find start point by subracting the length form the end point in the opposite direcion 
+    #Ex. Endpoint (5,5), length = 3, direction is d_y = 1, d_x = -1 (top right to bottom left)
+    #y_start = 5 - (3-1)*1 = 3 #y-direction decreases 
+    #x_start = 5 - (3-1)*-1 = 7 #x-direction increases 
+
     y_start = y_end - (length - 1) * d_y
     x_start = x_end - (length - 1) * d_x
 
-    # Before the starting point
+    # Before the starting point 
+    #Check if the previous square of start point  horizonally (d_x) and vertically (d_y) is within border
     if (0 <= x_start - d_x < len(board[0]) and 0 <= y_start - d_y < len(board)):
         if board[y_start - d_y][x_start - d_x] == " ":
             open_start = True
@@ -58,18 +68,28 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
     height = len(board)
     width = len(board[0])
 
-    # Continue while a sequence of the given length fits on the board.
+    #1: Continue while a sequence of the given length fits on the board.
+    #Calculates the endpoint with the length and direction to see if it fits in the board. 
+    #Ex. Startpoint (5,5), length = 3, direction is d_y = 1, d_x = -1 (top right to bottom left)
+        #y_end = 5 + (3-1)*1 = 7  
+        #x_start = 5 + (3-1)*-1 = 3 
+    
     while (0 <= y + (length - 1) * d_y < height and
            0 <= x + (length - 1) * d_x < width):
         is_sequence = True 
+        #2: Checks each square along the row and ensures they are all the same color as input parameter 
         for j in range (length): 
             if board[y + d_y * j][x + d_x * j] != col:
                 is_sequence = False 
         #Before we check bounds, ensure there are no same-colored stones on either side of the sequence, so that the sequence is exactly the length given 
         #Check if the stone after the sequence is the same color 
+
+        #Next square after the endpoint 
         y_after = y + length * d_y
         x_after = x + length * d_x
 
+        #3: If next square after the endpoint is in the board and is the same color as the input parameter, 
+        #the length is no longer the specified length 
         if 0 <= y_after < height and 0 <= x_after < width:
             if board[y_after][x_after] == col:
                 is_sequence = False
@@ -78,13 +98,17 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
         y_before = y - d_y
         x_before = x - d_x
 
+        #4: If the square before the startpoint is in the board and is the same color as the input parameter, 
+        #the length is no longer the specified length 
         if 0 <= y_before < height and 0 <= x_before < width:
             if board[y_before][x_before] == col:
-                is_sequence = False
+                is_sequence = False 
 
         
         #If the sequence is of given length, check bound and add to counter 
         if is_sequence == True:  
+
+            #re-caclculare endpoints to pass to is_bounded 
             y_end = y + (length - 1) * d_y
             x_end = x + (length - 1) * d_x
 
@@ -94,7 +118,9 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
                 open_seq_count += 1 
             if bounded == "SEMIOPEN": 
                 semi_open_seq_count += 1 
-
+        
+        #Change to the next startpoint which is the next square in the row 
+        #While loop will end when the endpoint no longer fits in the board 
         y += d_y
         x += d_x
     
