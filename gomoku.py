@@ -24,18 +24,19 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
     y_start = 0 
     x_start = 0 
     
-    #End point 
-    if x_end + d_x >= 0 and y_end + d_y < len(board): #Sequence not against the border 
-        if board[y_end + d_y][x_end + d_x]  == " ": 
-            open_end = True 
-
+    # End point
+    if (0 <= x_end + d_x < len(board[0]) and 0 <= y_end + d_y < len(board)):
+        if board[y_end + d_y][x_end + d_x] == " ":
+            open_end = True
+        
     #Start point 
     y_start = y_end - (length - 1) * d_y
     x_start = x_end - (length - 1) * d_x
 
-    if x_start - d_x <len(board[0]) and y_start - d_y >= 0 : #Sequence not against the border 
-        if board[y_start - d_y][x_start - d_x]  == " ": 
-            open_start = True 
+    # Before the starting point
+    if (0 <= x_start - d_x < len(board[0]) and 0 <= y_start - d_y < len(board)):
+        if board[y_start - d_y][x_start - d_x] == " ":
+            open_start = True
 
 
     #check bound type 
@@ -62,7 +63,7 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
            0 <= x + (length - 1) * d_x < width):
         is_sequence = True 
         for j in range (length): 
-            if board[y_start + d_y * j][x_start - d_x * j] != col: 
+            if board[y + d_y * j][x + d_x * j] != col:
                 is_sequence = False 
         #Before we check bounds, ensure there are no same-colored stones on either side of the sequence, so that the sequence is exactly the length given 
         #Check if the stone after the sequence is the same color 
