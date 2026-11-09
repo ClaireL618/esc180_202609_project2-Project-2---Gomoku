@@ -251,7 +251,7 @@ def is_win(board):
                             count = 0 
 
                     #If a positiion exists before the 5th group 
-                        if i - 1 >= 0: 
+                    if i - 1 >= 0: 
                         #If the stone before the group of 5 is also the same color, no win 
                             if board[i-1][j] == board[i][j]: 
                                 count = 0 
