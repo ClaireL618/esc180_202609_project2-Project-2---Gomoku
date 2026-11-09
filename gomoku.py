@@ -24,69 +24,20 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
     y_start = 0 
     x_start = 0 
     
-    #Horizontal sequence 
-    if d_x == 1 and d_y == 0: 
-
-        #End point 
-        if x_end + 1 < len(board[0]): #Sequence not against the border 
-            if board[y_end][x_end + 1]  == " ": 
-                open_end = True 
-
-        #Start point 
-        y_start = y_end 
-        x_start = x_end - length + 1 
-
-        if x_start - 1 >= 0: #Sequence not against the border 
-            if board[y_start][x_start - 1] == " ": 
-                open_start = True 
-
-    #Vertical sequence 
-    if d_x == 0 and d_y == 1: 
-           
-        #End point 
-        if y_end + 1 < len(board): #Sequence not against the border 
-            if board[y_end + 1][x_end]  == " ": 
-                open_end = True 
-
-        #Start point 
-        y_start = y_end - length + 1 
-        x_start = x_end 
-
-        if y_start -1 >= 0: #Sequence not against the border 
-            if board[y_start - 1][x_start] == " ": 
-                open_start = True 
-
-    #Diagonal sequence upper-left to lower-right 
-    if d_x == 1 and d_y == 1: 
-
-        #End point 
-        if x_end + 1 < len(board[0]) and y_end + 1 < len(board): #Sequence not against the border 
-            if board[y_end + 1][x_end + 1]  == " ": 
-                open_end = True 
-
-        #Start point 
-        y_start = y_end - length + 1 
-        x_start = x_end - length + 1
-
-        if x_start - 1 >= 0 and y_start - 1 >= 0 : #Sequence not against the border 
-            if board[y_start - 1][x_start-  1]  == " ": 
-                open_start = True 
+    # End point
+    if (0 <= x_end + d_x < len(board[0]) and 0 <= y_end + d_y < len(board)):
+        if board[y_end + d_y][x_end + d_x] == " ":
+            open_end = True
         
+    #Start point 
+    y_start = y_end - (length - 1) * d_y
+    x_start = x_end - (length - 1) * d_x
 
-    #Diagonal sequence upper-right to lower-left 
-    if d_x == -1 and d_y == 1: 
-        #End point 
-        if x_end - 1 >= 0 and y_end + 1 < len(board): #Sequence not against the border 
-            if board[y_end + 1][x_end - 1]  == " ": 
-                open_end = True 
+    # Before the starting point
+    if (0 <= x_start - d_x < len(board[0]) and 0 <= y_start - d_y < len(board)):
+        if board[y_start - d_y][x_start - d_x] == " ":
+            open_start = True
 
-        #Start point 
-        y_start = y_end - length + 1
-        x_start = x_end + length - 1 
-
-        if x_start + 1 <len(board[0]) and y_start - 1 >= 0 : #Sequence not against the border 
-            if board[y_start - 1][x_start + 1]  == " ": 
-                open_start = True 
 
     #check bound type 
     if open_end == True and open_start == True: 
@@ -102,182 +53,99 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
     semi_open_seq_count = 0
     open_seq_count, semi_open_seq_count = 0, 0 
 
-    #Counts the number of open or semi-open sequences of given length in a certain row 
+    x, y = x_start, y_start
 
-    #Horizontal rows 
-    if d_x == 1 and d_y == 0 : 
-        #Checks for next group of sequences along the row along the rest of the row    
-        for i in range (len(board[0]) - x_start - length + 1): 
-            is_sequence = True 
-            #Checks if there are adjecent stones of given color (groups of sequences) 
-            for j in range (length): 
-                if (board[y_start][x_start + i + j] != col): 
-                    #If there are not enough adjacent stones, there is no sequence. We do not check if the sequence is bounded. 
-                    is_sequence = False 
-            #Before we check bounds, ensure there are no same-colored stones on either side of the sequence, so that the sequence is exactly the length given 
-            #Check if the stone after the sequence is the same color 
-            if x_start + i + length < len(board[0]): 
-                if (board[y_start][x_start + i + length] == col): 
-                    is_sequence = False 
-            #Check if the stone before the sequence is the same color 
-            if x_start + i - 1 >= 0: 
-                if (board[y_start][x_start + i - 1 ] == col): 
-                    is_sequence = False 
+    height = len(board)
+    width = len(board[0])
 
-            #If the sequence is of given length, check bound and add to counter 
-            if is_sequence == True:  
-                bounded = is_bounded(board, y_start, x_start + i + (length - 1), length, d_y, d_x) 
-                if bounded == "OPEN": 
-                    open_seq_count += 1 
-                if bounded == "SEMIOPEN": 
-                    semi_open_seq_count += 1 
+    # Continue while a sequence of the given length fits on the board.
+    while (0 <= y + (length - 1) * d_y < height and
+           0 <= x + (length - 1) * d_x < width):
+        is_sequence = True 
+        for j in range (length): 
+            if board[y + d_y * j][x + d_x * j] != col:
+                is_sequence = False 
+        #Before we check bounds, ensure there are no same-colored stones on either side of the sequence, so that the sequence is exactly the length given 
+        #Check if the stone after the sequence is the same color 
+        y_after = y + length * d_y
+        x_after = x + length * d_x
 
-    #Vertical rows 
-    if d_x == 0 and d_y == 1: 
-        #Checks for next group of sequences along the column along the rest of the row    
-        for i in range (len(board) - y_start - length + 1): 
-            is_sequence = True 
-            #Checks if there are adjecent stones of given color (groups of sequences) 
-            for j in range (length): 
-                if (board[y_start + i + j][x_start] != col): 
-                    #If there are not enough adjacent stones, there is no sequence. We do not check if the sequence is bounded. 
-                    is_sequence = False 
-            #Before we check bounds, ensure there are no same-colored stones on either side of the sequence, so that the sequence is exactly the length given 
-            #Check if the stone after the sequence is the same color 
-            if y_start + i + length < len(board): 
-                if (board[y_start + i + length][x_start] == col): 
-                    is_sequence = False 
-            #Check if the stone before the sequence is the same color 
-            if y_start + i - 1 >= 0: 
-                if (board[y_start + i - 1 ][x_start] == col): 
-                    is_sequence = False 
-            
-            #If the sequence is of given length, check bound and add to counter 
-            if is_sequence == True:  
-                bounded = is_bounded(board, y_start + i + (length - 1), x_start, length, d_y, d_x) 
-                if bounded == "OPEN": 
-                    open_seq_count += 1 
-                if bounded == "SEMIOPEN": 
-                    semi_open_seq_count += 1 
-            
-    #Diagonal rows, upper-left-to-lower-right 
+        if 0 <= y_after < height and 0 <= x_after < width:
+            if board[y_after][x_after] == col:
+                is_sequence = False
 
-    if d_x == 1 and d_y == 1: 
-        #When checking diagonally, the shortest x or y distance to the boarder determines how much you can iterate 
-        #x-direction or y-direction is your limiting direction 
+        #Check if the stone before the sequence is the same color 
+        y_before = y - d_y
+        x_before = x - d_x
 
-        #Checks horiozntal distance remaining between x_end and the right border 
-        #Checks the vertical distance remaining between y_end end the bottom border  
-        for i in range (min(len(board[0]) - x_start - length + 1, len(board) - y_start - length + 1)): 
-            is_sequence = True 
-            for j in range (length): 
-                if (board[y_start + i + j][x_start + i + j] != col): 
-                    #If there are not enough adjacent stones, there is no sequence. We do not check if the sequence is bounded. 
-                    is_sequence = False 
+        if 0 <= y_before < height and 0 <= x_before < width:
+            if board[y_before][x_before] == col:
+                is_sequence = False
 
-            #Before we check bounds, ensure there are no same-colored stones on either side of the sequence, so that the sequence is exactly the length given 
-            #Check if the stone after the sequence is the same color 
-            if y_start + i + length < len(board) and x_start + i + length < len(board[0]): 
-                if (board[y_start + i + length][x_start + i + length] == col): 
-                    is_sequence = False 
-            #Check if the stone before the sequence is the same color 
-            if y_start + i - 1 >= 0 and x_start + i - 1 >= 0: 
-                if (board[y_start + i - 1 ][x_start + i - 1] == col): 
-                    is_sequence = False 
-            
-            #If the sequence is of given length, check bound and add to counter 
-            if is_sequence == True:  
-                bounded = is_bounded(board, y_start + i + (length - 1), x_start + i + (length - 1), length, d_y, d_x) 
-                if bounded == "OPEN": 
-                    open_seq_count += 1 
-                if bounded == "SEMIOPEN": 
-                    semi_open_seq_count += 1 
         
+        #If the sequence is of given length, check bound and add to counter 
+        if is_sequence == True:  
+            y_end = y + (length - 1) * d_y
+            x_end = x + (length - 1) * d_x
 
-#Diagonal rows, upper-right-to-lower-left 
+            bounded = is_bounded(board, y_end, x_end, length, d_y, d_x)
 
-    if d_x == -1 and d_y == 1: 
-        #When checking diagonally, the shortest x or y distance to the boarder determines how much you can iterate 
-        #x-direction or y-direction is your limiting direction 
+            if bounded == "OPEN": 
+                open_seq_count += 1 
+            if bounded == "SEMIOPEN": 
+                semi_open_seq_count += 1 
 
-        #Checks horiozntal distance remaining between x_end and the left border 
-        #Checks the vertical distance remaining between y_end end the bottom border  
-
-        for i in range (min(x_start - length + 1, len(board) - y_start - length + 1)): 
-            is_sequence = True 
-            for j in range (length): 
-                if (board[y_start + i + j][x_start - i - j] != col): 
-                    is_sequence = False 
-            #Before we check bounds, ensure there are no same-colored stones on either side of the sequence, so that the sequence is exactly the length given 
-            #Check if the stone after the sequence is the same color 
-            if y_start + i + length < len(board) and x_start - i - length >= 0: 
-                if (board[y_start + i + length][x_start - i - length] == col): 
-                    #If there are not enough adjacent stones, there is no sequence. We do not check if the sequence is bounded. 
-                    is_sequence = False 
-            #Check if the stone before the sequence is the same color 
-            if y_start + i - 1 >= 0 and x_start - i + 1 < len(board[0]): 
-                if (board[y_start + i - 1 ][x_start - i + 1] == col): 
-                    is_sequence = False 
-            
-            #If the sequence is of given length, check bound and add to counter 
-            if is_sequence == True:  
-                bounded = is_bounded(board, y_start + i + length -1, x_start - i - length + 1, length, d_y, d_x) 
-                if bounded == "OPEN": 
-                    open_seq_count += 1 
-                if bounded == "SEMIOPEN": 
-                    semi_open_seq_count += 1 
+        y += d_y
+        x += d_x
     
     return open_seq_count, semi_open_seq_count
     
-def detect_rows(board, col, length): 
+def detect_rows(board, col, length):
+    open_seq_count = 0
+    semi_open_seq_count = 0
 
-    open_seq_count, semi_open_seq_count = 0, 0 
+    height = len(board)
+    width = len(board[0])
 
-    #Check horizontal 
-    #Iterates through every row to check the whole board horiztonally 
-    for i in range (len(board)): 
-        open_semiopen_res = detect_row(board, col, i, 0, length, 0, 1)
-        open_seq_count += open_semiopen_res[0] 
-        semi_open_seq_count += open_semiopen_res[1] 
+    d_y = 0
+    d_x = 1
+    x_start = 0
+    # Horizontal: start from the leftmost column.
+    for y_start in range(height):
+        
+        open_count, semi_open_count = detect_row(
+            board, col, y_start, x_start, length, d_y, d_x
+        )
+        open_seq_count += open_count
+        semi_open_seq_count += semi_open_count
 
-    #Check vertical  
-    #Iterates through every column to check the whole board vertically  
-    for i in range (len(board)): 
-        open_semiopen_res = detect_row(board, col, 0, i, length, 1, 0)
-        open_seq_count += open_semiopen_res[0] 
-        semi_open_seq_count += open_semiopen_res[1] 
+    y_start = 0
+    # Vertical and both diagonals: start from the top row.
+    for d_x in [0, 1, -1]:
+        d_y = 1  # Direction for vertical and diagonal searches.
+        for x_start in range(width):
+            open_count, semi_open_count = detect_row(
+                board, col, y_start, x_start, length, d_y, d_x
+            )
+            open_seq_count += open_count
+            semi_open_seq_count += semi_open_count
 
-    #Check Diagonal, upper-left-to-lower-right, top half   
-    #Iterates through the first column diagonally (covers only the top half of the board)  
-    for i in range (len(board)): 
-        open_semiopen_res = detect_row(board, col, 0, i, length, 1, 1) 
-        open_seq_count += open_semiopen_res[0] 
-        semi_open_seq_count += open_semiopen_res[1] 
-  
-    #Check Diagonal, upper-left-to-lower-right, bottom half   
-    #Iterates through the first row diagonally (covers only the bottom half of the board)  
-    #For loop starts at 1 so the middle diagonal is only considered once 
-    for i in range (1, len(board)): 
-        open_semiopen_res = detect_row(board, col, i, 0, length, 1, 1) 
-        open_seq_count += open_semiopen_res[0] 
-        semi_open_seq_count += open_semiopen_res[1]  
+    d_y = 1
+    # Remaining diagonals: start from the left or right edge.
+    for d_x in [1, -1]:
+        if d_x == 1:
+            x_start = 0
+        else:
+            x_start = width - 1
+        # Start from the second row to avoid double counting the top-left and top-right corners.
+        for y_start in range(1, height):
+            open_count, semi_open_count = detect_row(
+                board, col, y_start, x_start, length, d_y, d_x
+            )
+            open_seq_count += open_count
+            semi_open_seq_count += semi_open_count
 
-    #Check Diagonal, upper-right-to-lower-left, bottom half   
-    #Iterates through the last column diagonally (covers only the bottom half of the board)  
-    #For loop starts at 1 so the middle diagonal is only considered once 
-    for i in range (1, len(board)): 
-        open_semiopen_res = detect_row(board, col, i, len(board)-1, length, 1, -1) 
-        open_seq_count += open_semiopen_res[0] 
-        semi_open_seq_count += open_semiopen_res[1] 
-    
-    #Check Diagonal, upper-right-to-lower-left, top half   
-    #Iterates through the first row row diagonally (covers only the top half of the board)  
-    for i in range (0, len(board)): 
-        open_semiopen_res = detect_row(board, col, 0, i, length, 1, -1) 
-        open_seq_count += open_semiopen_res[0] 
-        semi_open_seq_count += open_semiopen_res[1]  
-
-    return open_seq_count, semi_open_seq_count 
+    return open_seq_count, semi_open_seq_count
     
 def search_max(board):
     max_score = -float("inf") # Ensures first available move will always be selected, regarless of negaive 
@@ -383,7 +251,7 @@ def is_win(board):
                             count = 0 
 
                     #If a positiion exists before the 5th group 
-                        if i - 1 >= 0: 
+                    if i - 1 >= 0: 
                         #If the stone before the group of 5 is also the same color, no win 
                             if board[i-1][j] == board[i][j]: 
                                 count = 0 
