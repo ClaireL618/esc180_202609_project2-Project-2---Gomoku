@@ -72,7 +72,7 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
     #Calculates the endpoint with the length and direction to see if it fits in the board. 
     #Ex. Startpoint (5,5), length = 3, direction is d_y = 1, d_x = -1 (top right to bottom left)
         #y_end = 5 + (3-1)*1 = 7  
-        #x_start = 5 + (3-1)*-1 = 3 
+        #x_end = 5 + (3-1)*-1 = 3 
     
     while (0 <= y + (length - 1) * d_y < height and
            0 <= x + (length - 1) * d_x < width):
@@ -136,9 +136,9 @@ def detect_rows(board, col, length):
     d_y = 0
     d_x = 1
     x_start = 0
-    # Horizontal: start from the leftmost column.
+    # Check horizontally: Stay at leftmost column and move from top to bottom row 
     for y_start in range(height):
-        
+        #Calls detect_row to calculate number of open and semi open sequences in that row 
         open_count, semi_open_count = detect_row(
             board, col, y_start, x_start, length, d_y, d_x
         )
@@ -149,6 +149,9 @@ def detect_rows(board, col, length):
     # Vertical and both diagonals: start from the top row.
     for d_x in [0, 1, -1]:
         d_y = 1  # Direction for vertical and diagonal searches.
+        #d_x = 0, check vertically. Stays at top row (y=0), moves form left-to-right (iterate through x) --> y_start, x_start inputs 
+        #d_x = 1, check diagonally from top-left to bottom-right. Stays at top row (y=0), moves form left-to-right (iterate through x) --> y_start, x_start inputs 
+        #d_x = -1, check diagonally from top-right to bottom-left. Stays at top row (y=0), moves form left-to-right (iterate through x) --> y_start, x_start inputs 
         for x_start in range(width):
             open_count, semi_open_count = detect_row(
                 board, col, y_start, x_start, length, d_y, d_x
@@ -158,6 +161,8 @@ def detect_rows(board, col, length):
 
     d_y = 1
     # Remaining diagonals: start from the left or right edge.
+    #d_x = 1, check diagonal from top-left to bottom-right. Stays at leftmost column (iterate through y) to cover uncovered area from above 
+    # dx = -1, check diagonal from top-right to bottom-left. Stays at rightmost column (ierate through y) to cover uncovered area from above 
     for d_x in [1, -1]:
         if d_x == 1:
             x_start = 0
@@ -228,7 +233,7 @@ def score(board):
     
 def is_win(board):
     empty_count = 0 
-
+    #Iterates through whole boad and checks in all directions and checks if there are only 5 stones in a row (win)
     for i in range (len(board)): 
         for j in range (len(board)): 
             #Ensures referenced point is not empty 
@@ -237,7 +242,7 @@ def is_win(board):
                 count = 0 
                 #Only check the next 4 postitions right if available 
                 if j < len(board) - 4: 
-                    #Check next 4 positions right 
+                    #Check next 4 positions right. Check if they are the same color as board[i][j]
                     for k in range(5): 
                         if board [i][j+k] == board[i][j]: 
                             count += 1 
@@ -265,6 +270,7 @@ def is_win(board):
                 #Only check the next 4 postition down if available 
                 count = 0 
                 if i < len(board) - 4: 
+                     #Check next 4 positions down. Check if they are the same color as board[i][j]
                     for k in range(5): 
                         if board [i+k][j] == board[i][j]: 
                             count += 1 
@@ -294,6 +300,7 @@ def is_win(board):
                 #Only check the next 4 postition both right and down if available 
                 count = 0 
                 if i < len(board) - 4 and j < len(board) - 4: 
+                    #Check next 4 positions diagonally (top-left to bottom-right). Check if they are the same color as board[i][j]
                     for k in range(5): 
                         if board [i+k][j+k] == board[i][j]: 
                             count += 1 
@@ -323,6 +330,7 @@ def is_win(board):
                 #Only check the next 4 postition both left and down if available 
                 count = 0 
                 if i < len(board) - 4 and j >= 4: 
+                    #Check next 4 positions diagonally (top-right to bottom-left). Check if they are the same color as board[i][j]
                     for k in range(5): 
                         if board [i+k][j-k] == board[i][j]: 
                             count += 1 
